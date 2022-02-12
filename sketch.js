@@ -2,9 +2,13 @@
 //load powerups
 //sound
 var score = 0
+//no class from 4-8
 var life = 3
 var gamestate = 1
 var bubbleImage
+var whoosh, background_sound
+var target_carrier
+var carrier
 var letter, alfabets;
 var letter_array
 var a, b, c, d, e, f, g, h, i, j;
@@ -14,6 +18,10 @@ var bubbles, bubble
 var powerups, powerup
 var bowI1
 function preload() {
+    bubble_pop=loadSound('pop.mp3')
+    whoosh=loadSound('whoosh.mp3')
+    bc_music=loadSound('bc2.mp3')
+    background_sound=loadSound('bc_music.mp3')
     powerup = loadAnimation('powerups/r1.png', 'powerups/r2.png', 'powerups/r3.png', 'powerups/r4.png', 'powerups/r5.png', 'powerups/r6.png')
     bubbleImage = loadAnimation('images/bubble/b0.png')
     bowI1 = loadAnimation('images/bow/0a.png', 'images/bow/1a.png', 'images/bow/2a.png', 'images/bow/2b.png', 'images/bow/1b.png')
@@ -52,38 +60,27 @@ function preload() {
 }
 
 function setup() {
-    canvas = createCanvas(windowWidth, 3300);
+    canvas = createCanvas(windowWidth, windowHeight);
     bubbles = new Group();
     arrowgrp = new Group();
     alfabets = new Group();
     powerups = new Group();
-    /*
-        heart=createSprite(3312,408,20,20)
-        heart.addImage(heartimg)
-    
-        heart1=createSprite(3252,408,20,20)
-        heart1.addImage(heartimg)
-    
-        heart2=createSprite(3372,408,20,20)
-        heart2.addImage(heartimg)
-    
-        heart3=createSprite(3392,408,20,20)
-        heart3.addImage(heartimg)
-    if(life=3){heart.visible=false}*/
 
-    bow = createSprite(mouseX, height - 100, 20, 20)
+    bow = createSprite(mouseX, height - 150, 40, 40)
     bow.addAnimation('Bimage', bowImg)
     bow.addAnimation('shoot', bowI1)
-    bow.scale = 2;
+    bow.scale = 3;
     letter_array = [a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z]
-
+    
 }
 
 function draw() {
     background('lightblue')
+   // background_sound.play()
     generator()
     generator2_0()
     generate_powerup()
+    generatetarget()
     generate_powerup2()
     drawSprites()
     if (keyWentDown('space')) {
@@ -105,10 +102,10 @@ function draw() {
     textSize(113);
     fill(50);
     text('score:' + score, 120, 120);
-    
+
     arrowgrp.isTouching(bubbles, destroybubble)
     arrowgrp.isTouching(alfabets, destroyalphabet)
-    arrowgrp.isTouching(powerups, destroyalphabet)
+    arrowgrp.isTouching(powerups, destroypowerup)
 }
 
 
@@ -118,6 +115,7 @@ function destroybubble(sprite, group) {
     group.changeAnimation('pop', bubblepop)
     score++
     group.destroy()
+bubble_pop.play()
 }
 
 function destroyalphabet(sprite, group) {
@@ -126,9 +124,9 @@ function destroyalphabet(sprite, group) {
     group.destroy()
 }
 
-function destroyalphabet(sprite, group) {
+function destroypowerup(sprite, group) {
     //sprite.remove()
-    life++
+   score= score+10
     group.destroy()
 }
 
@@ -136,13 +134,15 @@ function destroyalphabet(sprite, group) {
 function generator() {
     if (frameCount % 220 == 0) {
         bubble = createSprite(random(100, windowWidth), -10, 5, 5);
-        bubble.addAnimation('bubble', bubbleImage )
+        bubble.addAnimation('bubble', bubbleImage)
         bubble.addAnimation('pop', bubblepop)
         rand = random(5, 9)
         bubble.velocityY = rand
         bubbles.add(bubble)
-        var ltr = Math.floor(Math.random() * letter_array.length)
-
+        var ltr = Math.floor(Math.random()*letter_array.length)
+        carrier=(ltr + 1)
+        
+        console.log(ltr)
         letter = createSprite(bubble.x, bubble.y, 10, 10)
         letter.velocityY = rand
         letter.addImage(letter_array[ltr])
@@ -196,7 +196,7 @@ function generate_powerup() {
         red_p.addAnimation('rotate', powerup)
         rand = random(8, 12)
         red_p.velocityY = rand
-         powerups.add(red_p)
+        powerups.add(red_p)
 
     }
 }
@@ -213,38 +213,48 @@ function generate_powerup2() {
             red.addAnimation('rotate', powerup)
             rand = random(8, 12)
             red.velocityX = rand
-            powerups.add(red_p)
+            powerups.add(red)
 
 
         }//right one
         else {
-            red = createSprite(width, random(100,height), 15, 15);
+            red = createSprite(width, random(100, height), 15, 15);
             red.addAnimation('rotate', powerup)
             rand = random(-8, -12)
             red.velocityX = rand
-            powerups.add(red_p)
+            powerups.add(red)
 
-            
+
         }
     }
 }
-
-
-
-
-
-
-
 
 function shoot() {
     console.log('working')
     bow.changeAnimation('shoot', bowI1)
     arrow = createSprite(bow.x, bow.y - 100, 10, 10)
-    arrow.velocityY = -225
+    arrow.velocityY = -265
     arrow.scale = 2
+    whoosh.play()
     arrow.addImage(Arrowimg)
     arrowgrp.add(arrow)
 
 
 }
 
+function generatetarget() {
+    if (frameCount % 100 == 0) {
+        
+        rect=createSprite(width/2,100,width,200)
+        
+        var ltr = Math.floor(Math.random()*letter_array.length)
+        carrier=(ltr + 1)
+        
+        console.log(ltr)
+        target = createSprite(width/2,100, 10, 10)
+      
+        target.addImage(letter_array[ltr])
+        target.scale = 5
+        
+    }
+}
